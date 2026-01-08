@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,11 +11,22 @@ import { Sparkles, Mail, Lock, ArrowRight } from "lucide-react";
 
 export default function LoginPage() {
     const router = useRouter();
-    const { login } = useAuth();
+    const { login, role } = useAuth();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
+
+    // Efecto para redireccionar cuando el rol se detecta
+    useEffect(() => {
+        if (role) {
+            if (role === "admin") {
+                router.push("/admin");
+            } else if (role === "client") {
+                router.push("/portal/dashboard");
+            }
+        }
+    }, [role, router]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -24,7 +35,7 @@ export default function LoginPage() {
 
         try {
             await login(email, password);
-            router.push("/admin");
+            // La redirección es manejada por el useEffect
         } catch (err: any) {
             setError(err.message || "Error al iniciar sesión");
         } finally {

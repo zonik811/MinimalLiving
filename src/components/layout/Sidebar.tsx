@@ -12,6 +12,7 @@ import {
     Sparkles,
     BarChart3,
     LogOut,
+    TrendingDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/hooks/useAuth";
@@ -22,6 +23,7 @@ const navigation = [
     { name: "Personal", href: "/admin/personal", icon: Users },
     { name: "Clientes", href: "/admin/clientes", icon: UserCircle },
     { name: "Pagos", href: "/admin/pagos", icon: DollarSign },
+    { name: "Gastos", href: "/admin/gastos", icon: TrendingDown },
     { name: "Servicios", href: "/admin/servicios", icon: Sparkles },
     { name: "Reportes", href: "/admin/reportes", icon: BarChart3 },
 ];

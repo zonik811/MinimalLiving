@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -23,15 +23,22 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { crearCita } from "@/lib/actions/citas";
-import { TipoPropiedad, MetodoPago } from "@/types";
+import { obtenerDireccionesCliente, crearDireccion } from "@/lib/actions/direcciones";
+import { TipoPropiedad, MetodoPago, Direccion } from "@/types";
 import { calcularDuracionEstimada } from "@/lib/utils/precio-calculator";
+import { useAuth } from "@/lib/hooks/useAuth"; // Import Auth Hook
 
 export default function AgendarPage() {
     const router = useRouter();
+    const { user, profile } = useAuth(); // Get user and profile
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState(false);
     const [currentStep, setCurrentStep] = useState(1);
+
+    // Address Management State
+    const [savedAddresses, setSavedAddresses] = useState<Direccion[]>([]);
+    const [selectedAddressId, setSelectedAddressId] = useState<string>("new");
 
     const [formData, setFormData] = useState({
         servicioId: "servicio-basico",
@@ -48,6 +55,63 @@ export default function AgendarPage() {
         horaCita: "",
         detallesAdicionales: "",
     });
+
+    // Auto-fill form data if user is logged in
+    useEffect(() => {
+        if (user && profile) {
+            setFormData(prev => ({
+                ...prev,
+                clienteNombre: profile.nombre || user.name || "",
+                clienteEmail: profile.email || user.email || "",
+                clienteTelefono: profile.telefono || "",
+                direccion: profile.direccion || "",
+                ciudad: profile.ciudad || "Bogotá",
+            }));
+        } else if (user) {
+            // Fallback if no specific client profile but user is logged in (e.g. just registered)
+            setFormData(prev => ({
+                ...prev,
+                clienteNombre: user.name || "",
+                clienteEmail: user.email || "",
+            }));
+        }
+    }, [user, profile]);
+
+    // Fetch saved addresses for logged-in users
+    useEffect(() => {
+        const fetchAddresses = async () => {
+            if (profile?.$id) {
+                const addrs = await obtenerDireccionesCliente(profile.$id);
+                setSavedAddresses(addrs);
+            }
+        };
+        fetchAddresses();
+    }, [profile]);
+
+    // Handle address selection
+    const handleAddressChange = (addressId: string) => {
+        setSelectedAddressId(addressId);
+
+        if (addressId === "new") {
+            // Reset address fields and remove direccionId
+            setFormData(prev => ({
+                ...prev,
+                direccion: "",
+                direccionId: undefined, // Clear any previous direccionId
+            }));
+        } else {
+            const addr = savedAddresses.find(a => a.$id === addressId);
+            if (addr) {
+                setFormData(prev => ({
+                    ...prev,
+                    direccion: addr.direccion,
+                    ciudad: addr.ciudad,
+                    tipoPropiedad: addr.tipo,
+                    direccionId: addr.$id, // CRITICAL: Include direccionId so backend knows it's saved
+                }));
+            }
+        }
+    };
 
     // Cálculo dinámico del precio estimado
     const precioEstimado = useMemo(() => {
@@ -107,17 +171,21 @@ export default function AgendarPage() {
                 tipoServicio: "basico",
             });
 
+            // Backend now handles both client AND address creation automatically
             const response = await crearCita({
                 ...formData,
                 duracionEstimada,
                 precioCliente: precioEstimado,
                 metodoPago: "por_cobrar" as MetodoPago,
+                servicioId: "limpieza-general",
+                clienteId: profile?.$id, // Enviar ID si el usuario está logueado para evitar duplicados
             });
 
             if (response.success) {
                 setSuccess(true);
                 setTimeout(() => {
-                    router.push("/");
+                    // Redirect to client dashboard instead of home
+                    router.push("/portal/dashboard?refresh=" + Date.now());
                 }, 3000);
             } else {
                 setError(response.error || "Error al crear la cita");
@@ -321,53 +389,84 @@ export default function AgendarPage() {
                                         </div>
                                     </CardHeader>
                                     <CardContent className="space-y-6 pt-6">
+                                        {/* Selector de Direcciones Guardadas */}
+                                        {savedAddresses.length > 0 && (
+                                            <div className="space-y-2">
+                                                <Label className="text-base">Usar una dirección guardada</Label>
+                                                <select
+                                                    className="flex h-12 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                                    value={selectedAddressId}
+                                                    onChange={(e) => handleAddressChange(e.target.value)}
+                                                >
+                                                    <option value="new">+ Nueva Dirección</option>
+                                                    {savedAddresses.map((addr) => (
+                                                        <option key={addr.$id} value={addr.$id}>
+                                                            {addr.nombre} - {addr.direccion}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        )}
+
                                         <div className="space-y-2">
                                             <Label htmlFor="direccion" className="text-base flex items-center space-x-2">
                                                 <MapPin className="h-4 w-4 text-secondary" />
-                                                <span>Dirección Completa *</span>
+                                                <span>Dirección Exacta *</span>
                                             </Label>
                                             <Input
                                                 id="direccion"
                                                 required
-                                                placeholder="Calle, Número, Torre/Apto"
+                                                placeholder="Calle 123 # 45 - 67"
                                                 className="h-12 text-lg bg-white/80 backdrop-blur-sm"
                                                 value={formData.direccion}
                                                 onChange={(e) => setFormData({ ...formData, direccion: e.target.value })}
-                                                onClick={() => setCurrentStep(2)}
+                                                disabled={selectedAddressId !== "new"} // Readonly if existing selected
                                             />
+                                            {selectedAddressId !== "new" && (
+                                                <p className="text-xs text-muted-foreground">
+                                                    Para editar, selecciona "Nueva Dirección" o ve a tu perfil.
+                                                </p>
+                                            )}
                                         </div>
 
-                                        <div className="space-y-2">
-                                            <Label htmlFor="ciudad" className="text-base">Ciudad *</Label>
-                                            <Input
-                                                id="ciudad"
-                                                required
-                                                placeholder="Ej: Bogotá"
-                                                className="h-12 text-lg bg-white/80 backdrop-blur-sm"
-                                                value={formData.ciudad}
-                                                onChange={(e) => setFormData({ ...formData, ciudad: e.target.value })}
-                                            />
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="space-y-2">
+                                                <Label htmlFor="ciudad" className="text-base flex items-center space-x-2">
+                                                    <Home className="h-4 w-4 text-secondary" />
+                                                    <span>Ciudad *</span>
+                                                </Label>
+                                                <select
+                                                    id="ciudad"
+                                                    className="flex h-12 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                                    value={formData.ciudad}
+                                                    onChange={(e) => setFormData({ ...formData, ciudad: e.target.value })}
+                                                    disabled={selectedAddressId !== "new"}
+                                                >
+                                                    <option value="Bogotá">Bogotá</option>
+                                                    <option value="Medellín">Medellín</option>
+                                                    <option value="Cali">Cali</option>
+                                                    <option value="Barranquilla">Barranquilla</option>
+                                                </select>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="tipoPropiedad" className="text-base flex items-center space-x-2">
+                                                    <Home className="h-4 w-4 text-secondary" />
+                                                    <span>Tipo de Propiedad *</span>
+                                                </Label>
+                                                <select
+                                                    id="tipoPropiedad"
+                                                    className="flex h-12 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                                    value={formData.tipoPropiedad}
+                                                    onChange={(e) => setFormData({ ...formData, tipoPropiedad: e.target.value as TipoPropiedad })}
+                                                    disabled={selectedAddressId !== "new"}
+                                                >
+                                                    <option value={TipoPropiedad.CASA}>Casa</option>
+                                                    <option value={TipoPropiedad.APARTAMENTO}>Apartamento</option>
+                                                    <option value={TipoPropiedad.OFICINA}>Oficina</option>
+                                                    <option value={TipoPropiedad.LOCAL}>Local Comercial</option>
+                                                </select>
+                                            </div>
                                         </div>
-
-                                        <div className="space-y-2">
-                                            <Label htmlFor="tipoPropiedad" className="text-base flex items-center space-x-2">
-                                                <Home className="h-4 w-4 text-secondary" />
-                                                <span>Tipo de Propiedad *</span>
-                                            </Label>
-                                            <select
-                                                id="tipoPropiedad"
-                                                required
-                                                value={formData.tipoPropiedad}
-                                                onChange={(e) => setFormData({ ...formData, tipoPropiedad: e.target.value as TipoPropiedad })}
-                                                className="flex h-12 w-full rounded-md border-2 border-input bg-white/80 backdrop-blur-sm px-4 text-lg font-medium focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20"
-                                            >
-                                                <option value={TipoPropiedad.CASA}>🏠 Casa</option>
-                                                <option value={TipoPropiedad.APARTAMENTO}>🏢 Apartamento</option>
-                                                <option value={TipoPropiedad.OFICINA}>💼 Oficina</option>
-                                                <option value={TipoPropiedad.LOCAL}>🏪 Local Comercial</option>
-                                            </select>
-                                        </div>
-
                                         <div className="grid grid-cols-3 gap-4">
                                             <div className="space-y-2">
                                                 <Label htmlFor="metrosCuadrados" className="text-sm">M² (aprox)</Label>

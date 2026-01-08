@@ -1,3 +1,5 @@
+import { Models } from "appwrite";
+
 // Enums para estados y categorías
 export enum EstadoCita {
     PENDIENTE = "pendiente",
@@ -59,6 +61,21 @@ export enum TipoCliente {
     COMERCIAL = "comercial",
 }
 
+export enum NivelFidelidad {
+    BRONCE = "bronce",
+    PLATA = "plata",
+    ORO = "oro",
+    PLATINO = "platino",
+}
+
+export interface Logro {
+    id: string;
+    nombre: string;
+    descripcion: string;
+    icono: string;
+    fechaDesbloqueo: string;
+}
+
 export enum FrecuenciaCliente {
     UNICA = "unica",
     SEMANAL = "semanal",
@@ -106,6 +123,7 @@ export interface Empleado {
     documentos?: string[]; // Contratos, certificados (Storage IDs)
     calificacionPromedio: number;
     totalServicios: number;
+    serviciosRealizados?: number; // New field for completed services count
     createdAt: string;
     updatedAt: string;
 }
@@ -130,6 +148,7 @@ export interface Cita {
     duracionEstimada: number; // minutos
     empleadosAsignados: string[]; // Array de IDs de empleados
     empleados?: Empleado[]; // Populated
+    horasTrabajadas?: number; // Hours worked by employee (default 8)
     estado: EstadoCita;
     precioCliente: number; // Lo que cobra al cliente
     precioAcordado: number; // Lo real después de negociación
@@ -175,11 +194,15 @@ export interface Cliente {
     tipoCliente: TipoCliente;
     frecuenciaPreferida: FrecuenciaCliente;
     totalServicios: number;
+    serviciosCompletados?: number; // Total histórico real
     totalGastado: number;
     calificacionPromedio: number; // Cómo califican al servicio
     notasImportantes?: string; // Preferencias, alergias, instrucciones
     activo: boolean;
     createdAt: string;
+    // Loyalty
+    puntosAcumulados?: number;
+    nivelFidelidad?: string;
     ultimoServicio?: string;
 }
 
@@ -233,6 +256,7 @@ export interface ActualizarCitaInput extends Partial<CrearCitaInput> {
     pagadoPorCliente?: boolean;
     calificacionCliente?: number;
     resenaCliente?: string;
+    horasTrabajadas?: number;
 }
 
 export interface RegistrarPagoInput {
@@ -263,9 +287,32 @@ export interface EstadisticasDashboard {
     citasEsteMes: number;
     empleadosActivos: number;
     ingresosMes: number;
+    // Missing fields restored
     pagosEmpleadosPendientes: number;
-    serviciosCompletados: number;
     clientesNuevos: number;
+    // Loyalty
+    puntosAcumulados?: number;
+    nivelFidelidad?: string;
+    serviciosCompletados?: number;
+    totalGastado?: number;
+}
+
+export interface Direccion extends Models.Document {
+    clienteId: string;
+    nombre: string; // Ej: "Casa", "Oficina"
+    direccion: string;
+    ciudad: string;
+    barrio?: string;
+    coordenadas?: string;
+    tipo: TipoPropiedad;
+}
+
+export interface HistorialPuntos extends Models.Document {
+    clienteId: string;
+    puntos: number;
+    motivo: string;
+    referenciaId?: string; // ID de cita relacionada
+    fecha: string;
 }
 
 export interface ServicioNoPagado {
@@ -287,6 +334,7 @@ export interface FiltrosCitas {
     fechaInicio?: string;
     fechaFin?: string;
     clienteId?: string;
+    pagadoPorCliente?: boolean;
 }
 
 export interface FiltrosEmpleados {

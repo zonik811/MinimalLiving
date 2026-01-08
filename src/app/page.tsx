@@ -5,11 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, CheckCircle, Phone, Mail, Clock, Shield, Award, Star, Users, TrendingUp, Heart, Zap } from "lucide-react";
 
+import { MarketingNavbar } from "@/components/layout/marketing-navbar";
+
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-white">
+      <MarketingNavbar />
       {/* Hero Section con Imagen */}
-      <section className="relative h-[90vh] flex items-center overflow-hidden">
+      <section className="relative h-[100vh] flex items-center overflow-hidden">
         <div className="absolute inset-0 z-0">
           <Image
             src="/images/hero_cleaning_1767812896737.png"
@@ -18,7 +21,7 @@ export default function HomePage() {
             className="object-cover brightness-50"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-sky-900/90 via-sky-800/80 to-transparent mix-blend-multiply"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-900/90 via-sky-900/50 to-transparent"></div>
           <div className="absolute inset-0 opacity-30">
             <div className="absolute top-20 right-20 w-72 h-72 bg-blue-400 rounded-full blur-3xl animate-pulse"></div>
             <div className="absolute bottom-20 left-20 w-96 h-96 bg-emerald-400 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "2s" }}></div>
@@ -45,6 +48,14 @@ export default function HomePage() {
                   Agendar Servicio Ahora
                 </Button>
               </Link>
+
+              <Link href="/registro">
+                <Button size="lg" className="text-xl px-10 py-8 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-2xl animate-bounce-slow border-2 border-white/20">
+                  <Award className="mr-2 h-6 w-6" />
+                  Registrarse (4% OFF)
+                </Button>
+              </Link>
+
               <Link href="#servicios">
                 <Button size="lg" variant="outline" className="text-xl px-12 py-8 border-2 border-white text-white hover:bg-white/10 backdrop-blur-sm">
                   Ver Servicios
@@ -381,7 +392,9 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* CTA Principal */}
+
+
+      {/* Footer */}
       <section className="py-24">
         <div className="container mx-auto px-4">
           <Card className="max-w-5xl mx-auto relative overflow-hidden border-0">
@@ -410,7 +423,7 @@ export default function HomePage() {
                 </Link>
                 <Link href="/login">
                   <Button size="lg" variant="outline" className="text-xl px-12 py-8 border-2 border-white text-white hover:bg-white/20">
-                    Acceso Admin
+                    Ingresar
                   </Button>
                 </Link>
               </div>
@@ -447,7 +460,7 @@ export default function HomePage() {
                   </div>
                   <span>+57 300 123 4567</span>
                 </a>
-                <a href="mailto:contacto@limpieza.com" className="flex items-center space-x-3 text-gray-400 hover:text-white transition-colors group">
+                <a href="mailto:contacto@altioraclean.com" className="flex items-center space-x-3 text-gray-400 hover:text-white transition-colors group">
                   <div className="w-10 h-10 bg-secondary/20 rounded-lg flex items-center justify-center group-hover:bg-secondary transition-colors">
                     <Mail className="h-5 w-5 text-secondary group-hover:text-white" />
                   </div>

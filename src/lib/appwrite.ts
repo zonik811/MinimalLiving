@@ -20,7 +20,11 @@ export const COLLECTIONS = {
     CITAS: "citas",
     EMPLEADOS: "empleados",
     PAGOS_EMPLEADOS: "pagos_empleados",
+    PAGOS_CLIENTES: "pagos_clientes",
+    GASTOS: "gastos",
     CLIENTES: "clientes",
+    DIRECCIONES: "direcciones",
+    HISTORIAL_PUNTOS: "historial_puntos"
 };
 
 // Funciones helper para Storage

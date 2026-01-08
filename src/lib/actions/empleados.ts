@@ -70,6 +70,28 @@ export async function obtenerEmpleado(id: string): Promise<Empleado> {
 }
 
 /**
+ * Obtiene un empleado por su email
+ */
+export async function obtenerEmpleadoPorEmail(email: string): Promise<Empleado | null> {
+    try {
+        const response = await databases.listDocuments(
+            DATABASE_ID,
+            COLLECTIONS.EMPLEADOS,
+            [Query.equal("email", email), Query.limit(1)]
+        );
+
+        if (response.documents.length > 0) {
+            return response.documents[0] as unknown as Empleado;
+        }
+
+        return null;
+    } catch (error) {
+        console.error("Error buscando empleado por email:", error);
+        return null;
+    }
+}
+
+/**
  * Crea un nuevo empleado
  */
 export async function crearEmpleado(
@@ -147,6 +169,46 @@ export async function actualizarEmpleado(
 }
 
 /**
+ * Recalcula el número de servicios realizados por un empleado
+ * contando las citas completadas en la base de datos
+ */
+export async function recalcularServiciosEmpleado(empleadoId: string): Promise<{ success: boolean; count?: number; error?: string }> {
+    try {
+        console.log(`🔄 Recalculando servicios para empleado: ${empleadoId}`);
+
+        // Contar citas completadas con este empleado asignado
+        const citasCompletadas = await databases.listDocuments(
+            DATABASE_ID,
+            COLLECTIONS.CITAS,
+            [
+                Query.equal('estado', 'COMPLETADA'),
+                Query.contains('empleadosAsignados', empleadoId)
+            ]
+        );
+
+        const count = citasCompletadas.total;
+        console.log(`📊 Empleado ${empleadoId}: ${count} servicios completados`);
+        console.log(`📋 IDs de citas encontradas:`, citasCompletadas.documents.map((c: any) => c.$id));
+
+        // Actualizar el contador
+        console.log(`💾 Intentando actualizar BD: serviciosRealizados = ${count}`);
+        const updateResult = await databases.updateDocument(
+            DATABASE_ID,
+            COLLECTIONS.EMPLEADOS,
+            empleadoId,
+            { serviciosRealizados: count }
+        );
+
+        console.log(`✅ Actualización confirmada. Valor en BD:`, updateResult.serviciosRealizados);
+        console.log(`✅ Empleado ${empleadoId} actualizado: serviciosRealizados = ${count}`);
+        return { success: true, count };
+    } catch (error: any) {
+        console.error(`❌ Error recalculando servicios de empleado ${empleadoId}:`, error);
+        return { success: false, error: error.message };
+    }
+}
+
+/**
  * Elimina un empleado (soft delete - marca como inactivo)
  */
 export async function eliminarEmpleado(id: string): Promise<DeleteResponse> {
@@ -196,18 +258,33 @@ export async function obtenerEstadisticasEmpleado(
             return fechaCita >= inicioMes;
         });
 
+        // Calcular horas usando horasTrabajadas (default 8 si no existe)
         const horasTrabajadasMes = citasEsteMes.reduce((total: number, cita: any) => {
-            return total + cita.duracionEstimada / 60;
+            return total + (cita.horasTrabajadas || 8);
         }, 0);
 
-        // Obtener pagos pendientes (esto se implementará cuando se haga el módulo de pagos)
-        const pendientePorPagar = 0; // TODO: Calcular desde pagos_empleados
+        // Obtener pagos realizados al empleado
+        const pagos = await databases.listDocuments(
+            DATABASE_ID,
+            COLLECTIONS.PAGOS_EMPLEADOS,
+            [
+                Query.equal('empleadoId', empleadoId)
+            ]
+        );
 
-        // Calcular total ganado histórico
+        // Calcular total pagado
+        const totalPagado = pagos.documents.reduce((total: number, pago: any) => {
+            return total + (pago.monto || 0);
+        }, 0);
+
+        // Calcular total ganado histórico usando horasTrabajadas
         const totalGanado = citasCompletadas.documents.reduce((total: number, cita: any) => {
-            const horas = cita.duracionEstimada / 60;
-            return total + horas * empleado.tarifaPorHora;
+            const horas = cita.horasTrabajadas || 8;
+            return total + (horas * empleado.tarifaPorHora);
         }, 0);
+
+        // Pendiente por pagar = Total Ganado - Total Pagado
+        const pendientePorPagar = totalGanado - totalPagado;
 
         return {
             totalServicios: empleado.totalServicios,

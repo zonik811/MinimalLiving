@@ -6,11 +6,19 @@ import { DATABASE_ID } from "@/lib/appwrite";
 import { Query, ID } from "node-appwrite";
 
 // Configure web-push
-webpush.setVapidDetails(
-    "mailto:admin@altioraclean.com",
-    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-    process.env.VAPID_PRIVATE_KEY!
-);
+const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY?.trim()!;
+const privateKey = process.env.VAPID_PRIVATE_KEY?.trim()!;
+
+// Configure web-push
+if (publicKey && privateKey) {
+    webpush.setVapidDetails(
+        "mailto:admin@altioraclean.com",
+        publicKey,
+        privateKey
+    );
+} else {
+    console.warn("VAPID keys missing, push notifications disabled.");
+}
 
 const COLLECTION_SUBSCRIPTIONS = "push_subscriptions"; // Ensure this matches your Appwrite Collection ID
 

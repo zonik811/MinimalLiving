@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 
-export default function PagosLayout({ children }: { children: React.Node }) {
+export default function PagosLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
 
     const tabs = [

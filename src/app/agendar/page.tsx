@@ -51,7 +51,9 @@ const SERVICIOS = [
     }
 ];
 
-export default function AgendarPage() {
+import { Suspense } from "react";
+
+function AgendarContent() {
     const router = useRouter();
     const { user, profile } = useAuth();
     const searchParams = useSearchParams();
@@ -397,5 +399,17 @@ export default function AgendarPage() {
                 </form>
             </div>
         </div>
+    );
+}
+
+export default function AgendarPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center bg-stone-50">
+                <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            </div>
+        }>
+            <AgendarContent />
+        </Suspense>
     );
 }

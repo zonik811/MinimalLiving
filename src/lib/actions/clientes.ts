@@ -157,7 +157,7 @@ export async function crearCliente(
             calificacionPromedio: 0,
             notasImportantes: data.notasImportantes,
             activo: true,
-            createdAt: new Date().toISOString(),
+            // createdAt is handled by system
         };
 
         const newCliente = await databases.createDocument(

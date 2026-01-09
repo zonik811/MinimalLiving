@@ -4,7 +4,7 @@ import { Models } from "appwrite";
 export enum EstadoCita {
     PENDIENTE = "pendiente",
     CONFIRMADA = "confirmada",
-    EN_PROGRESO = "en-progreso",
+    EN_PROGRESO = "en_camino",
     COMPLETADA = "completada",
     CANCELADA = "cancelada",
 }
@@ -43,17 +43,15 @@ export enum MetodoPago {
 }
 
 export enum ConceptoPago {
-    SERVICIO = "servicio",
-    ANTICIPO = "anticipo",
-    PAGO_MENSUAL = "pago_mensual",
+    HONORARIOS = "honorarios",
+    TRANSPORTE = "transporte",
     BONO = "bono",
-    DEDUCCION = "deduccion",
 }
 
 export enum EstadoPago {
     PENDIENTE = "pendiente",
-    PAGADO = "pagado",
-    PARCIAL = "parcial",
+    APROBADO = "aprobado",
+    RECHAZADO = "rechazado",
 }
 
 export enum TipoCliente {
@@ -187,7 +185,7 @@ export interface PagoEmpleado {
 export interface Gasto {
     $id: string;
     categoria: string; // "transporte", "materiales", etc.
-    concepto: string;
+    descripcion: string;
     monto: number;
     metodoPago: string; // "efectivo", "transferencia", etc.
     proveedor?: string;

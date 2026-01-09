@@ -51,7 +51,7 @@ export function MarketingNavbar() {
                             "font-bold text-xl",
                             isScrolled ? "text-gray-900" : "text-white"
                         )}>
-                            Altiora<span className={cn(isScrolled ? "text-secondary" : "text-white/90")}>Clean</span>
+                            Minimal <span className={cn(isScrolled ? "text-secondary" : "text-white/90")}>Living</span>
                         </span>
                     </Link>
 
@@ -73,6 +73,16 @@ export function MarketingNavbar() {
 
                     {/* Actions */}
                     <div className="hidden md:flex items-center gap-4">
+                        <Link href="/registro">
+                            <Button
+                                variant="default"
+                                size="sm"
+                                className="bg-secondary text-white hover:bg-secondary/90 font-medium animate-pulse-subtle"
+                            >
+                                <Sparkles className="w-3 h-3 mr-2" />
+                                Regístrate y gana 10% dto
+                            </Button>
+                        </Link>
                         <Link href="/login">
                             <Button
                                 variant="ghost"
@@ -88,9 +98,9 @@ export function MarketingNavbar() {
                         <Link href="/agendar">
                             <Button
                                 className={cn(
-                                    "font-medium shadow-lg hover:translate-y-[-2px] transition-all",
+                                    "font-medium shadow-md transition-all hover:shadow-lg",
                                     isScrolled
-                                        ? "bg-gradient-to-r from-primary to-secondary text-white hover:shadow-primary/25"
+                                        ? "bg-primary text-primary-foreground hover:bg-primary/90"
                                         : "bg-white text-primary hover:bg-white/90"
                                 )}
                             >

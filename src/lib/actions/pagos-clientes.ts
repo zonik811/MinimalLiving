@@ -114,7 +114,7 @@ export async function registrarPagoCliente(data: RegistrarPagoClienteInput): Pro
             clienteId: data.clienteId,
             monto: data.monto,
             metodoPago: data.metodoPago,
-            estado: data.estado || 'pagado',
+            estado: data.estado || 'aprobado',
             fechaPago: data.fechaPago,
             notas: data.notas,
             createdAt: new Date().toISOString()

@@ -7,10 +7,10 @@ import { Toaster } from "@/components/ui/sonner";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "AltioraClean - Servicios de Limpieza Profesional",
-  description: "Servicios de limpieza residencial y comercial de alta calidad",
+  title: "Minimal Living - Organización de Espacios y Feng Shui",
+  description: "Transforma tu hogar con organización profesional de espacios, armonia Feng Shui y diseño minimalista.",
   manifest: "/manifest.json",
-  themeColor: "#0ea5e9",
+  themeColor: "#8DA399",
   viewport: "minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no, viewport-fit=cover",
 };
 

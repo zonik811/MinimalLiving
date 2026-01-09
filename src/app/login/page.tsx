@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Sparkles, Mail, Lock, ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -57,51 +58,39 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-sky-50 via-white to-emerald-50">
-            {/* Animated Background Elements */}
-            <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-                <div className="absolute top-10 left-10 w-64 h-64 bg-primary/20 rounded-full blur-3xl animate-pulse"></div>
-                <div className="absolute bottom-10 right-10 w-96 h-96 bg-secondary/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-sky-100/50 to-emerald-100/50 rounded-full blur-3xl opacity-50"></div>
-            </div>
-
-            <div className="w-full max-w-md relative z-10 p-4">
+        <div className="min-h-screen flex items-center justify-center bg-stone-50 py-12 px-4 sm:px-6 lg:px-8">
+            <div className="w-full max-w-md space-y-8">
                 {/* Logo y título */}
-                <div className="text-center mb-8 animate-fade-in">
-                    <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-sky-500 to-emerald-500 rounded-3xl mb-6 shadow-2xl items-center justify-center transform hover:scale-110 transition-transform duration-300">
-                        <Sparkles className="w-10 h-10 text-white animate-pulse" />
+                <div className="text-center animate-fade-in">
+                    <div className="flex justify-center mb-4">
+                        <div className="p-3 bg-primary/10 rounded-2xl">
+                            <Sparkles className="w-8 h-8 text-primary" />
+                        </div>
                     </div>
-                    <h1 className="text-4xl font-bold text-gray-900 mb-2 tracking-tight">
-                        AltioraClean
+                    <h1 className="text-3xl font-bold text-stone-900 tracking-tight">
+                        Minimal Living
                     </h1>
-                    <p className="text-gray-600 text-lg">
-                        Panel Administrativo
+                    <p className="mt-2 text-stone-600">
+                        Bienvenido de nuevo
                     </p>
                 </div>
 
                 {/* Card de login */}
-                <Card className="shadow-2xl border-white/50 backdrop-blur-xl bg-white/70 overflow-hidden transform transition-all duration-300 hover:shadow-3xl">
-                    <CardHeader className="space-y-1 pt-8 pb-4 text-center">
-                        <CardTitle className="text-2xl font-bold bg-gradient-to-r from-sky-600 to-emerald-600 bg-clip-text text-transparent">
-                            Bienvenido de nuevo
-                        </CardTitle>
-                        <CardDescription className="text-base text-gray-500">
-                            Ingresa tus credenciales para acceder
-                        </CardDescription>
+                <Card className="border-stone-200 shadow-xl bg-white/80 backdrop-blur-sm">
+                    <CardHeader className="space-y-1">
+                        <CardTitle className="text-xl text-center text-stone-800">Iniciar Sesión</CardTitle>
                     </CardHeader>
-                    <CardContent className="pb-8 px-8">
-                        <form onSubmit={handleSubmit} className="space-y-6">
+                    <CardContent>
+                        <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="space-y-2">
-                                <Label htmlFor="email" className="text-gray-700 font-medium">Email Corporativo</Label>
-                                <div className="relative group">
-                                    <div className="absolute left-3 top-3 text-gray-400 group-focus-within:text-primary transition-colors">
-                                        <Mail className="w-5 h-5" />
-                                    </div>
+                                <Label htmlFor="email">Email</Label>
+                                <div className="relative">
+                                    <Mail className="absolute left-3 top-3 w-4 h-4 text-stone-400" />
                                     <Input
                                         id="email"
                                         type="email"
-                                        placeholder="admin@altioraclean.com"
-                                        className="pl-10 h-12 bg-white/50 border-gray-200 focus:border-primary/50 focus:ring-primary/20 transition-all font-medium"
+                                        placeholder="tu@email.com"
+                                        className="pl-9 bg-stone-50 border-stone-200"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         required
@@ -112,20 +101,18 @@ export default function LoginPage() {
 
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between">
-                                    <Label htmlFor="password" className="text-gray-700 font-medium">Contraseña</Label>
-                                    <a href="#" className="text-xs text-primary hover:underline font-medium">
+                                    <Label htmlFor="password">Contraseña</Label>
+                                    {/* <a href="#" className="text-xs text-secondary hover:underline font-medium">
                                         ¿Olvidaste tu contraseña?
-                                    </a>
+                                    </a> */}
                                 </div>
-                                <div className="relative group">
-                                    <div className="absolute left-3 top-3 text-gray-400 group-focus-within:text-primary transition-colors">
-                                        <Lock className="w-5 h-5" />
-                                    </div>
+                                <div className="relative">
+                                    <Lock className="absolute left-3 top-3 w-4 h-4 text-stone-400" />
                                     <Input
                                         id="password"
                                         type="password"
                                         placeholder="••••••••"
-                                        className="pl-10 h-12 bg-white/50 border-gray-200 focus:border-primary/50 focus:ring-primary/20 transition-all font-medium"
+                                        className="pl-9 bg-stone-50 border-stone-200"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         required
@@ -135,7 +122,7 @@ export default function LoginPage() {
                             </div>
 
                             {error && (
-                                <div className="p-4 bg-red-50 border border-red-100 rounded-xl flex items-center gap-3 animate-shake">
+                                <div className="p-3 bg-red-50 border border-red-100 rounded-md flex items-center gap-2">
                                     <div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>
                                     <p className="text-sm font-medium text-red-600">{error}</p>
                                 </div>
@@ -143,28 +130,21 @@ export default function LoginPage() {
 
                             <Button
                                 type="submit"
-                                className="w-full h-12 text-lg font-bold bg-gradient-to-r from-sky-500 to-emerald-500 hover:from-sky-600 hover:to-emerald-600 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
+                                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium h-11 transition-all"
                                 disabled={loading}
                             >
-                                {loading ? (
-                                    <span className="flex items-center">
-                                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                                        Conectando...
-                                    </span>
-                                ) : (
-                                    <span className="flex items-center">
-                                        Iniciar Sesión <ArrowRight className="ml-2 w-5 h-5" />
-                                    </span>
-                                )}
+                                {loading ? "Ingresando..." : "Iniciar Sesión"}
                             </Button>
                         </form>
+                        <p className="text-center text-sm text-stone-600 mt-6">
+                            ¿No tienes cuenta? <Link href="/registro" className="text-secondary hover:underline font-semibold">Regístrate gratis</Link>
+                        </p>
                     </CardContent>
-                    <div className="h-1 bg-gradient-to-r from-sky-400 to-emerald-400"></div>
                 </Card>
 
                 {/* Footer */}
-                <p className="text-center text-sm text-gray-500 mt-8 font-medium">
-                    © 2026 AltioraClean. Todos los derechos reservados.
+                <p className="text-center text-sm text-stone-400 mt-8">
+                    © 2026 Minimal Living. Todos los derechos reservados.
                 </p>
             </div>
         </div>

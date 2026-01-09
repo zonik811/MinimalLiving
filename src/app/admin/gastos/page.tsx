@@ -48,7 +48,7 @@ export default function GastosPage() {
 
     const [nuevoGasto, setNuevoGasto] = useState({
         categoria: "materiales",
-        concepto: "",
+        descripcion: "",
         monto: 0,
         metodoPago: "efectivo",
         proveedor: "",
@@ -103,7 +103,10 @@ export default function GastosPage() {
     };
 
     const handleGuardarGasto = async () => {
-        if (!nuevoGasto.concepto || nuevoGasto.monto <= 0) return;
+        if (!nuevoGasto.descripcion || nuevoGasto.monto <= 0) {
+            alert("Por favor completa la descripción y el monto.");
+            return;
+        }
 
         try {
             let result;
@@ -127,7 +130,7 @@ export default function GastosPage() {
         setEditingGasto(gasto);
         setNuevoGasto({
             categoria: gasto.categoria,
-            concepto: gasto.concepto,
+            descripcion: gasto.descripcion,
             monto: gasto.monto,
             metodoPago: gasto.metodoPago,
             proveedor: gasto.proveedor || "",
@@ -142,7 +145,7 @@ export default function GastosPage() {
         setEditingGasto(null);
         setNuevoGasto({
             categoria: "materiales",
-            concepto: "",
+            descripcion: "",
             monto: 0,
             metodoPago: "efectivo",
             proveedor: "",
@@ -169,7 +172,7 @@ export default function GastosPage() {
                     <TestNotification />
                     <Button
                         onClick={() => setShowDialog(true)}
-                        className="bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 transition-all hover:scale-105"
+                        className="bg-slate-900 hover:bg-slate-800 text-white shadow-lg shadow-slate-900/20 transition-all hover:scale-105"
                     >
                         <Plus className="mr-2 h-4 w-4" /> Registrar Gasto
                     </Button>
@@ -321,8 +324,7 @@ export default function GastosPage() {
                             <option value="todos">Todas las categorías</option>
                             <option value="transporte">Transporte</option>
                             <option value="materiales">Materiales</option>
-                            <option value="arriendo">Arriendo</option>
-                            <option value="servicios">Servicios</option>
+                            <option value="marketing">Marketing</option>
                             <option value="otros">Otros</option>
                         </select>
                     </div>
@@ -378,7 +380,7 @@ export default function GastosPage() {
                                                     {gasto.categoria.replace("_", " ")}
                                                 </Badge>
                                             </TableCell>
-                                            <TableCell className="text-gray-600">{gasto.concepto}</TableCell>
+                                            <TableCell className="text-gray-600">{gasto.descripcion}</TableCell>
                                             <TableCell className="text-gray-500 text-sm">{gasto.proveedor || "-"}</TableCell>
                                             <TableCell className="text-gray-500 text-sm capitalize">{gasto.metodoPago}</TableCell>
                                             <TableCell className="text-right font-bold text-gray-900">
@@ -429,8 +431,7 @@ export default function GastosPage() {
                                 >
                                     <option value="transporte">Transporte</option>
                                     <option value="materiales">Materiales</option>
-                                    <option value="arriendo">Arriendo</option>
-                                    <option value="servicios">Servicios</option>
+                                    <option value="marketing">Marketing</option>
                                     <option value="otros">Otros</option>
                                 </select>
                             </div>
@@ -448,10 +449,10 @@ export default function GastosPage() {
                                 </div>
                             </div>
                             <div className="col-span-2">
-                                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">Concepto</label>
+                                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">Descripción</label>
                                 <Input
-                                    value={nuevoGasto.concepto}
-                                    onChange={(e) => setNuevoGasto({ ...nuevoGasto, concepto: e.target.value })}
+                                    value={nuevoGasto.descripcion}
+                                    onChange={(e) => setNuevoGasto({ ...nuevoGasto, descripcion: e.target.value })}
                                     placeholder="Ej: Compra de insumos de limpieza"
                                     className="h-10 bg-gray-50/50 focus:bg-white"
                                 />

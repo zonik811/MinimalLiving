@@ -6,7 +6,7 @@ import { Query, ID } from "node-appwrite";
 
 export interface RegistrarGastoInput {
     categoria: string;
-    concepto: string;
+    descripcion: string;
     monto: number;
     metodoPago: string;
     proveedor?: string;
@@ -18,7 +18,7 @@ export interface RegistrarGastoInput {
 export interface Gasto {
     $id: string;
     categoria: string;
-    concepto: string;
+    descripcion: string;
     monto: number;
     metodoPago: string;
     proveedor?: string;
@@ -83,7 +83,7 @@ export async function registrarGasto(data: RegistrarGastoInput): Promise<{ succe
             gastoData
         );
 
-        console.log(`✅ Gasto registrado: $${data.monto} - ${data.concepto}`);
+        console.log(`✅ Gasto registrado: $${data.monto} - ${data.descripcion}`);
         return { success: true, data: newGasto as unknown as Gasto };
     } catch (error: any) {
         console.error("❌ Error registrando gasto:", error);

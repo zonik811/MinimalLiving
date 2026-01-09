@@ -41,6 +41,7 @@ import {
 } from "@/components/ui/dialog";
 import { obtenerPagosEmpleado, registrarPago, eliminarPago, type Pago } from "@/lib/actions/pagos";
 import { obtenerEmpleados, obtenerEstadisticasEmpleado } from "@/lib/actions/empleados";
+import { obtenerCitas } from "@/lib/actions/citas";
 import { formatearPrecio, formatearFecha } from "@/lib/utils";
 import {
     BarChart,
@@ -59,6 +60,7 @@ export default function PagosEmpleadosPage() {
     const [pagos, setPagos] = useState<Pago[]>([]);
     const [filteredPagos, setFilteredPagos] = useState<Pago[]>([]);
     const [empleados, setEmpleados] = useState<any[]>([]);
+    const [citas, setCitas] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [showDialog, setShowDialog] = useState(false);
     const [selectedEmpleadoInfo, setSelectedEmpleadoInfo] = useState<any>(null);
@@ -79,7 +81,7 @@ export default function PagosEmpleadosPage() {
     const [nuevoPago, setNuevoPago] = useState({
         empleadoId: "",
         monto: 0,
-        concepto: "servicio",
+        concepto: "honorarios",
         metodoPago: "transferencia",
         periodo: new Date().toLocaleDateString("es-ES", { month: "long", year: "numeric" }),
         fechaPago: new Date().toISOString().split("T")[0],
@@ -104,7 +106,10 @@ export default function PagosEmpleadosPage() {
             const allPagosResults = await Promise.all(allPagosPromises);
             const allPagos = allPagosResults.flat().sort((a, b) => new Date(b.fechaPago).getTime() - new Date(a.fechaPago).getTime());
 
+            const citasData = await obtenerCitas();
+
             setPagos(allPagos);
+            setCitas(citasData);
         } catch (error) {
             console.error("Error cargando datos:", error);
         } finally {
@@ -176,7 +181,7 @@ export default function PagosEmpleadosPage() {
                 setNuevoPago({
                     empleadoId: "",
                     monto: 0,
-                    concepto: "servicio",
+                    concepto: "honorarios",
                     metodoPago: "transferencia",
                     periodo: new Date().toLocaleDateString("es-ES", { month: "long", year: "numeric" }),
                     fechaPago: new Date().toISOString().split("T")[0],
@@ -246,6 +251,56 @@ export default function PagosEmpleadosPage() {
                             <div className="text-4xl font-bold">{formatearPrecio(stats.totalPagado)}</div>
                             <p className="text-emerald-100/80 text-sm mt-1">
                                 En el periodo seleccionado
+                            </p>
+                        </CardContent>
+                    </Card>
+
+                    {/* Pending Payroll Card */}
+                    <Card className="border-none shadow-md bg-white border-l-4 border-l-orange-500 overflow-hidden relative mt-4">
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-orange-600 font-medium text-sm flex items-center">
+                                <AlertCircle className="mr-2 h-4 w-4" /> Por Pagar (Pendiente)
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-3xl font-bold text-gray-900">
+                                {(() => {
+                                    // 1. Filtrar citas COMPLETADAS del periodo seleccionado
+                                    const citasDelPeriodo = citas.filter(c => {
+                                        const fecha = new Date(c.fechaCita);
+                                        const mesCita = fecha.getMonth() + 1;
+                                        const anioCita = fecha.getFullYear();
+                                        return c.estado === 'completada' &&
+                                            mesCita.toString() === filtros.mes &&
+                                            anioCita.toString() === filtros.anio;
+                                    });
+
+                                    // 2. Calcular costo laboral esperado para esas citas
+                                    let totalCostoLaboral = 0;
+
+                                    citasDelPeriodo.forEach(c => {
+                                        // Sumar costo de cada empleado asignado
+                                        if (c.empleadosAsignados && Array.isArray(c.empleadosAsignados)) {
+                                            c.empleadosAsignados.forEach((empId: string) => {
+                                                const empleado = empleados.find(e => e.$id === empId);
+                                                if (empleado) {
+                                                    const horas = c.horasTrabajadas || 8; // Default 8h if not specified
+                                                    totalCostoLaboral += (empleado.tarifaPorHora || 0) * horas;
+                                                }
+                                            });
+                                        }
+                                    });
+
+                                    // 3. Restar lo que ya se ha pagado en este periodo (filtro actual de pagos)
+                                    // Nota: Esto asume que los pagos del periodo corresponden a las citas del periodo.
+                                    // Es una aproximación válida para "Flujo de Caja del Mes".
+                                    const pendiente = Math.max(0, totalCostoLaboral - stats.totalPagado);
+
+                                    return formatearPrecio(pendiente);
+                                })()}
+                            </div>
+                            <p className="text-gray-400 text-xs mt-1">
+                                Nómina estimada por servicios completados
                             </p>
                         </CardContent>
                     </Card>
@@ -515,11 +570,9 @@ export default function PagosEmpleadosPage() {
                                     onChange={(e) => setNuevoPago({ ...nuevoPago, concepto: e.target.value })}
                                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                 >
-                                    <option value="servicio">Pago por Servicio</option>
-                                    <option value="pago_mensual">Pago Mensual/Quincenal</option>
-                                    <option value="anticipo">Anticipo</option>
+                                    <option value="honorarios">Honorarios (Servicio)</option>
+                                    <option value="transporte">Transporte / Viáticos</option>
                                     <option value="bono">Bono / Extra</option>
-                                    <option value="deduccion">Deducción</option>
                                 </select>
                             </div>
 

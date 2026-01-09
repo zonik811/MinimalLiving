@@ -62,7 +62,7 @@ export async function registrarPago(data: RegistrarPagoInput): Promise<{ success
     try {
         const pagoData = {
             ...data,
-            estado: data.estado || 'pagado',
+            estado: data.estado || 'aprobado',
             createdAt: new Date().toISOString()
         };
 

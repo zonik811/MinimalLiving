@@ -60,7 +60,7 @@ export default function PagosClientesPage() {
         citaId: "",
         monto: 0,
         metodoPago: "transferencia",
-        estado: "pagado",
+        estado: "aprobado",
         fechaPago: new Date().toISOString().split("T")[0],
         notas: ""
     });
@@ -194,7 +194,7 @@ export default function PagosClientesPage() {
                     citaId: "",
                     monto: 0,
                     metodoPago: "transferencia",
-                    estado: "pagado",
+                    estado: "aprobado",
                     fechaPago: new Date().toISOString().split("T")[0],
                     notas: ""
                 });
@@ -315,6 +315,51 @@ export default function PagosClientesPage() {
                             <div className="text-4xl font-bold">{formatearPrecio(totalRecibido)}</div>
                             <p className="text-blue-100/80 text-sm mt-1">
                                 En el periodo seleccionado
+                            </p>
+                        </CardContent>
+                    </Card>
+
+                    {/* Pending Payments Card */}
+                    <Card className="border-none shadow-md bg-white border-l-4 border-l-orange-500 overflow-hidden relative mt-4">
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-orange-600 font-medium text-sm flex items-center">
+                                <AlertTriangle className="mr-2 h-4 w-4" /> Por Cobrar (Pendiente)
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-3xl font-bold text-gray-900">
+                                {(() => {
+                                    // 1. Filtrar citas del periodo seleccionado
+                                    const citasDelPeriodo = citas.filter(c => {
+                                        const fecha = new Date(c.fechaCita);
+                                        const mesCita = fecha.getMonth() + 1;
+                                        const anioCita = fecha.getFullYear();
+                                        return mesCita.toString() === filtros.mes && anioCita.toString() === filtros.anio;
+                                    });
+
+                                    // 2. Calcular total esperado vs total pagado para esas citas
+                                    let totalEsperado = 0;
+                                    let totalPagadoParaPeriodo = 0;
+
+                                    citasDelPeriodo.forEach(c => {
+                                        const precio = c.precioAcordado || c.precioCliente || 0;
+                                        totalEsperado += precio;
+
+                                        // Buscar pagos para esta cita (sin importar fecha de pago, importa cubrir la deuda)
+                                        const pagosCita = pagos.filter(p => p.citaId === c.id || p.citaId[0] === c.id);
+                                        const pagado = pagosCita.reduce((s, p) => s + p.monto, 0);
+
+                                        // Sumar solo lo que corresponde a esta cita (tope precio)
+                                        // Ojo, si pagaron de más (error), no debería restar deuda de otros.
+                                        totalPagadoParaPeriodo += Math.min(precio, pagado);
+                                    });
+
+                                    const pendiente = Math.max(0, totalEsperado - totalPagadoParaPeriodo);
+                                    return formatearPrecio(pendiente);
+                                })()}
+                            </div>
+                            <p className="text-gray-400 text-xs mt-1">
+                                De servicios agendados en este mes
                             </p>
                         </CardContent>
                     </Card>

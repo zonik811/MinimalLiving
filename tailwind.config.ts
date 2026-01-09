@@ -15,11 +15,11 @@ const config: Config = {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#0EA5E9",
+          DEFAULT: "#8DA399", // Verde Salvia
           foreground: "#FFFFFF",
         },
         secondary: {
-          DEFAULT: "#10B981",
+          DEFAULT: "#E07A5F", // Terracota Suave/Madera
           foreground: "#FFFFFF",
         },
         destructive: {
@@ -27,12 +27,12 @@ const config: Config = {
           foreground: "#FFFFFF",
         },
         muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
+          DEFAULT: "#F5F5F4", // Stone 100
+          foreground: "#78716C", // Stone 500
         },
         accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
+          DEFAULT: "#FDFBF7", // Blanco Hueso / Beige Claro
+          foreground: "#44403C", // Stone 700
         },
         popover: {
           DEFAULT: "hsl(var(--popover))",
